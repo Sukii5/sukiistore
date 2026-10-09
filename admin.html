@@ -101,8 +101,8 @@
                         <input type="file" id="iconFile" accept="image/*" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                     </div>
                     <div>
-                        <label class="block text-xs uppercase tracking-wider text-gray-600 mb-1 font-semibold">Screenshot File</label>
-                        <input type="file" id="screenshotFile" accept="image/*" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        <label class="block text-xs uppercase tracking-wider text-gray-600 mb-1 font-semibold">Screenshot Files (Multiple)</label>
+                        <input type="file" id="screenshotFiles" accept="image/*" multiple class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                     </div>
                 </div>
 
@@ -136,7 +136,6 @@
                 }
 
                 tbody.innerHTML = records.map(app => {
-                    // Helper to get correct file URL from PocketBase if uploaded as file
                     let iconSrc = 'https://via.placeholder.com/64';
                     if (app.icon) {
                         iconSrc = `${PB_URL}/api/files/apps/${app.id}/${app.icon}`;
@@ -180,7 +179,7 @@
             document.getElementById('description').value = app.description;
             document.getElementById('apkurl').value = app.apkurl;
             document.getElementById('iconFile').value = '';
-            document.getElementById('screenshotFile').value = '';
+            document.getElementById('screenshotFiles').value = '';
             document.getElementById('appModal').classList.remove('hidden');
             document.getElementById('appModal').classList.add('flex');
         }
@@ -206,9 +205,9 @@
                 formData.append('icon', iconFile);
             }
 
-            const screenshotFile = document.getElementById('screenshotFile').files[0];
-            if (screenshotFile) {
-                formData.append('screenshot', screenshotFile);
+            const screenshotFiles = document.getElementById('screenshotFiles').files;
+            for (let i = 0; i < screenshotFiles.length; i++) {
+                formData.append('screenshot', screenshotFiles[i]);
             }
 
             try {
