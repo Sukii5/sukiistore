@@ -97,12 +97,12 @@
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs uppercase tracking-wider text-gray-600 mb-1 font-semibold">App Icon URL</label>
-                        <input type="url" id="iconurl" placeholder="https://..." class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:border-blue-600 text-gray-900">
+                        <label class="block text-xs uppercase tracking-wider text-gray-600 mb-1 font-semibold">App Icon File</label>
+                        <input type="file" id="iconFile" accept="image/*" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                     </div>
                     <div>
-                        <label class="block text-xs uppercase tracking-wider text-gray-600 mb-1 font-semibold">Screenshot URL</label>
-                        <input type="url" id="screenshoturl" placeholder="https://..." class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:border-blue-600 text-gray-900">
+                        <label class="block text-xs uppercase tracking-wider text-gray-600 mb-1 font-semibold">Screenshot File</label>
+                        <input type="file" id="screenshotFile" accept="image/*" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                     </div>
                 </div>
 
@@ -135,21 +135,28 @@
                     return;
                 }
 
-                tbody.innerHTML = records.map(app => `
-                    <tr class="hover:bg-gray-50 transition border-b border-gray-100">
-                        <td class="p-4 font-semibold text-gray-900 flex items-center space-x-3">
-                            ${app.iconurl ? `<img src="${app.iconurl}" class="w-8 h-8 rounded-lg object-cover border border-gray-200">` : ''}
-                            <span>${app.title}</span>
-                        </td>
-                        <td class="p-4 text-gray-600"><span class="px-2.5 py-1 bg-gray-100 border border-gray-200 rounded-full text-xs text-blue-600 font-medium">${app.category}</span></td>
-                        <td class="p-4 text-gray-600">${app.developer}</td>
-                        <td class="p-4 text-amber-500 font-bold">★ ${app.rating ? app.rating.toFixed(1) : '0.0'} <span class="text-xs text-gray-400 font-normal">(${app.ratings_count || 0})</span></td>
-                        <td class="p-4 text-right space-x-2">
-                            <button onclick='openEditModal(${JSON.stringify(app)})' class="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-semibold transition">Edit</button>
-                            <button onclick="deleteApp('${app.id}')" class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-semibold transition">Delete</button>
-                        </td>
-                    </tr>
-                `).join('');
+                tbody.innerHTML = records.map(app => {
+                    // Helper to get correct file URL from PocketBase if uploaded as file
+                    let iconSrc = 'https://via.placeholder.com/64';
+                    if (app.icon) {
+                        iconSrc = `${PB_URL}/api/files/apps/${app.id}/${app.icon}`;
+                    }
+                    return `
+                        <tr class="hover:bg-gray-50 transition border-b border-gray-100">
+                            <td class="p-4 font-semibold text-gray-900 flex items-center space-x-3">
+                                <img src="${iconSrc}" class="w-8 h-8 rounded-lg object-cover border border-gray-200">
+                                <span>${app.title}</span>
+                            </td>
+                            <td class="p-4 text-gray-600"><span class="px-2.5 py-1 bg-gray-100 border border-gray-200 rounded-full text-xs text-blue-600 font-medium">${app.category}</span></td>
+                            <td class="p-4 text-gray-600">${app.developer}</td>
+                            <td class="p-4 text-amber-500 font-bold">★ ${app.rating ? app.rating.toFixed(1) : '0.0'} <span class="text-xs text-gray-400 font-normal">(${app.ratings_count || 0})</span></td>
+                            <td class="p-4 text-right space-x-2">
+                                <button onclick='openEditModal(${JSON.stringify(app)})' class="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-semibold transition">Edit</button>
+                                <button onclick="deleteApp('${app.id}')" class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-semibold transition">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
             } catch (err) {
                 console.error('Error fetching apps:', err);
                 document.getElementById('adminAppTable').innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-500">Failed to connect to backend database. Check console.</td></tr>`;
@@ -171,9 +178,9 @@
             document.getElementById('category').value = app.category;
             document.getElementById('developer').value = app.developer;
             document.getElementById('description').value = app.description;
-            document.getElementById('iconurl').value = app.iconurl || '';
-            document.getElementById('screenshoturl').value = app.screenshoturl || '';
             document.getElementById('apkurl').value = app.apkurl;
+            document.getElementById('iconFile').value = '';
+            document.getElementById('screenshotFile').value = '';
             document.getElementById('appModal').classList.remove('hidden');
             document.getElementById('appModal').classList.add('flex');
         }
@@ -186,23 +193,31 @@
         async function saveApp(e) {
             e.preventDefault();
             const id = document.getElementById('appId').value;
-            const data = {
-                title: document.getElementById('title').value,
-                category: document.getElementById('category').value,
-                developer: document.getElementById('developer').value,
-                description: document.getElementById('description').value,
-                iconurl: document.getElementById('iconurl').value,
-                screenshoturl: document.getElementById('screenshoturl').value,
-                apkurl: document.getElementById('apkurl').value,
-            };
+            
+            const formData = new FormData();
+            formData.append('title', document.getElementById('title').value);
+            formData.append('category', document.getElementById('category').value);
+            formData.append('developer', document.getElementById('developer').value);
+            formData.append('description', document.getElementById('description').value);
+            formData.append('apkurl', document.getElementById('apkurl').value);
+
+            const iconFile = document.getElementById('iconFile').files[0];
+            if (iconFile) {
+                formData.append('icon', iconFile);
+            }
+
+            const screenshotFile = document.getElementById('screenshotFile').files[0];
+            if (screenshotFile) {
+                formData.append('screenshot', screenshotFile);
+            }
 
             try {
                 if (id) {
-                    await pb.collection('apps').update(id, data);
+                    await pb.collection('apps').update(id, formData);
                 } else {
-                    data.rating = 0;
-                    data.ratings_count = 0;
-                    await pb.collection('apps').create(data);
+                    formData.append('rating', 0);
+                    formData.append('ratings_count', 0);
+                    await pb.collection('apps').create(formData);
                 }
                 closeModal();
                 fetchAdminApps();
