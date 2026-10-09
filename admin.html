@@ -1,152 +1,219 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sukii Store - Admin Portal</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            bg: '#0a0b10',
+                            card: '#121420',
+                            neon: '#00ffcc',
+                            purple: '#9d4edd',
+                            pink: '#ff007f'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- PocketBase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.1/dist/pocketbase.umd.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Space Grotesk', sans-serif; }
+        .neon-glow { box-shadow: 0 0 20px rgba(0, 255, 204, 0.2); }
+        .neon-border { border: 1px solid rgba(0, 255, 204, 0.3); }
+    </style>
 </head>
-<body class="font-sans antialiased bg-zinc-50 min-h-screen text-zinc-900">
+<body class="bg-cyber-bg text-gray-100 min-h-screen selection:bg-cyber-neon selection:text-black">
 
-    <!-- Admin Header -->
-    <header class="border-b bg-white sticky top-0 z-40">
-        <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-            <h1 class="text-lg font-bold">Admin Dashboard</h1>
-            <a href="index.html" class="text-xs font-semibold px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 rounded-lg">View Store</a>
+    <!-- Navbar -->
+    <nav class="bg-cyber-card border-b border-gray-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyber-neon to-cyber-purple flex items-center justify-center font-bold text-black">S</div>
+                <span class="text-xl font-bold tracking-wider bg-gradient-to-r from-cyber-neon to-cyber-purple bg-clip-text text-transparent">SUKII ADMIN</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="index.html" class="px-4 py-2 text-sm font-semibold text-gray-300 hover:text-cyber-neon transition">View Store</a>
+                <button onclick="openAddModal()" class="px-4 py-2 bg-gradient-to-r from-cyber-neon to-cyber-purple text-black font-bold text-sm rounded-lg hover:opacity-90 transition shadow-lg">
+                    + Add New App
+                </button>
+            </div>
         </div>
-    </header>
+    </nav>
 
-    <main class="max-w-4xl mx-auto px-4 py-8">
-        <h2 class="text-2xl font-bold mb-6">Manage Store Apps</h2>
-        
-        <!-- App List Container -->
-        <div id="adminAppList" class="space-y-3">
-            <!-- Dynamically populated app items with Edit buttons -->
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold tracking-wide">Manage Store Apps</h1>
+            <span id="appCount" class="text-xs px-3 py-1 bg-cyber-card neon-border rounded-full text-cyber-neon">Loading apps...</span>
+        </div>
+
+        <!-- Apps Table -->
+        <div class="bg-cyber-card neon-border rounded-xl overflow-hidden shadow-xl">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-gray-800 text-gray-400 text-xs uppercase tracking-wider bg-black/40">
+                            <th class="p-4">App Title</th>
+                            <th class="p-4">Category</th>
+                            <th class="p-4">Developer</th>
+                            <th class="p-4">Rating</th>
+                            <th class="p-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminAppTable" class="divide-y divide-gray-800 text-sm">
+                        <!-- Populated dynamically via JS -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </main>
 
-    <!-- Edit App Modal -->
-    <div id="editModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl">
-            <h3 class="text-xl font-bold text-zinc-900 mb-4">Edit App Details</h3>
-            <form id="editAppForm" class="space-y-4">
-                <input type="hidden" id="editAppId">
+    <!-- Add/Edit Modal -->
+    <div id="appModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-cyber-card neon-border rounded-2xl w-full max-w-lg p-6 relative shadow-2xl">
+            <h2 id="modalTitle" class="text-xl font-bold mb-4 text-cyber-neon">Add New App</h2>
+            <form id="appForm" onsubmit="saveApp(event)" class="space-y-4">
+                <input type="hidden" id="appId">
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-600 mb-1">App Title</label>
-                    <input type="text" id="editTitle" required class="w-full p-2.5 border rounded-xl text-sm focus:outline-teal-600">
+                    <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">App Title</label>
+                    <input type="text" id="title" required class="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:border-cyber-neon text-white">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">Category</label>
+                        <input type="text" id="category" required class="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:border-cyber-neon text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">Developer</label>
+                        <input type="text" id="developer" required class="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:border-cyber-neon text-white">
+                    </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-600 mb-1">Category</label>
-                    <input type="text" id="editCategory" required class="w-full p-2.5 border rounded-xl text-sm focus:outline-teal-600">
+                    <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">Description</label>
+                    <textarea id="description" rows="3" required class="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:border-cyber-neon text-white"></textarea>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-600 mb-1">Developer</label>
-                    <input type="text" id="editDeveloper" required class="w-full p-2.5 border rounded-xl text-sm focus:outline-teal-600">
+                    <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">APK Direct URL</label>
+                    <input type="url" id="apkurl" required class="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:border-cyber-neon text-white">
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-zinc-600 mb-1">Description</label>
-                    <textarea id="editDescription" rows="3" required class="w-full p-2.5 border rounded-xl text-sm focus:outline-teal-600"></textarea>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-zinc-600 mb-1">APK Download URL</label>
-                    <input type="url" id="editApkUrl" required class="w-full p-2.5 border rounded-xl text-sm focus:outline-teal-600">
-                </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeEditModal()" class="px-4 py-2 bg-zinc-100 text-zinc-700 rounded-xl text-sm font-semibold hover:bg-zinc-200">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-teal-600 text-white rounded-xl text-sm font-semibold hover:bg-teal-700">Save Changes</button>
+                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-800">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm font-semibold transition">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-gradient-to-r from-cyber-neon to-cyber-purple text-black rounded-lg text-sm font-bold hover:opacity-90 transition">Save App</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- JavaScript Logic -->
     <script>
-        const PB_URL = "https://your-pocketbase-app.onrender.com"; // UPDATE WITH YOUR RENDER URL
+        // REPLACE WITH YOUR LIVE RENDER URL
+        const PB_URL = "https://sukiistore.onrender.com";
+        const pb = new PocketBase(PB_URL);
 
-        async function loadAdminApps() {
+        async function fetchAdminApps() {
             try {
-                const res = await fetch(`${PB_URL}/api/collections/apps/records`);
-                const data = await res.json();
-                const listContainer = document.getElementById('adminAppList');
-                listContainer.innerHTML = '';
-
-                if (!data.items || data.items.length === 0) {
-                    listContainer.innerHTML = '<p class="text-zinc-500 text-sm">No apps found in database.</p>';
+                const records = await pb.collection('apps').getFullList({ sort: '-created' });
+                const tbody = document.getElementById('adminAppTable');
+                document.getElementById('appCount').innerText = `${records.length} Apps Total`;
+                
+                if (records.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-500">No apps found. Click "+ Add New App" to create one.</td></tr>`;
                     return;
                 }
 
-                data.items.forEach(item => {
-                    const row = document.createElement('div');
-                    row.className = 'flex items-center justify-between p-4 bg-white border rounded-2xl shadow-sm';
-                    row.innerHTML = `
-                        <div>
-                            <h4 class="font-bold text-zinc-900">${escapeHtml(item.title)}</h4>
-                            <p class="text-xs text-zinc-500 mt-0.5">${escapeHtml(item.category || 'App')} • By ${escapeHtml(item.developer || 'Unknown')}</p>
-                        </div>
-                        <button onclick="openEditModal('${item.id}')" class="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-semibold rounded-xl transition">
-                            Edit
-                        </button>
-                    `;
-                    listContainer.appendChild(row);
-                });
+                tbody.innerHTML = records.map(app => `
+                    <tr class="hover:bg-white/[0.02] transition border-b border-gray-800/50">
+                        <td class="p-4 font-semibold text-white">${app.title}</td>
+                        <td class="p-4 text-gray-400"><span class="px-2.5 py-1 bg-cyber-bg neon-border rounded-full text-xs text-cyber-neon">${app.category}</span></td>
+                        <td class="p-4 text-gray-300">${app.developer}</td>
+                        <td class="p-4 text-yellow-400 font-bold">★ ${app.rating ? app.rating.toFixed(1) : '0.0'} <span class="text-xs text-gray-500 font-normal">(${app.ratings_count || 0})</span></td>
+                        <td class="p-4 text-right space-x-2">
+                            <button onclick='openEditModal(${JSON.stringify(app)})' class="px-3 py-1.5 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 rounded-lg text-xs font-semibold transition">Edit</button>
+                            <button onclick="deleteApp('${app.id}')" class="px-3 py-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-lg text-xs font-semibold transition">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
             } catch (err) {
-                console.error('Failed to load admin apps:', err);
+                console.error('Error fetching apps:', err);
+                document.getElementById('adminAppTable').innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-400">Failed to connect to backend database. Check console.</td></tr>`;
             }
         }
 
-        async function openEditModal(appId) {
-            try {
-                const res = await fetch(`${PB_URL}/api/collections/apps/records/${appId}`);
-                const app = await res.json();
-
-                document.getElementById('editAppId').value = app.id;
-                document.getElementById('editTitle').value = app.title || '';
-                document.getElementById('editCategory').value = app.category || '';
-                document.getElementById('editDeveloper').value = app.developer || '';
-                document.getElementById('editDescription').value = app.description || '';
-                document.getElementById('editApkUrl').value = app.apkurl || '';
-
-                document.getElementById('editModal').classList.remove('hidden');
-            } catch (err) {
-                alert('Failed to fetch app details.');
-            }
+        function openAddModal() {
+            document.getElementById('modalTitle').innerText = "Add New App";
+            document.getElementById('appId').value = "";
+            document.getElementById('appForm').reset();
+            document.getElementById('appModal').classList.remove('hidden');
+            document.getElementById('appModal').classList.add('flex');
         }
 
-        function closeEditModal() {
-            document.getElementById('editModal').classList.add('hidden');
+        function openEditModal(app) {
+            document.getElementById('modalTitle').innerText = "Edit App";
+            document.getElementById('appId').value = app.id;
+            document.getElementById('title').value = app.title;
+            document.getElementById('category').value = app.category;
+            document.getElementById('developer').value = app.developer;
+            document.getElementById('description').value = app.description;
+            document.getElementById('apkurl').value = app.apkurl;
+            document.getElementById('appModal').classList.remove('hidden');
+            document.getElementById('appModal').classList.add('flex');
         }
 
-        document.getElementById('editAppForm').addEventListener('submit', async (e) => {
+        function closeModal() {
+            document.getElementById('appModal').classList.add('hidden');
+            document.getElementById('appModal').classList.remove('flex');
+        }
+
+        async function saveApp(e) {
             e.preventDefault();
-            const appId = document.getElementById('editAppId').value;
-
-            const updatedData = {
-                title: document.getElementById('editTitle').value,
-                category: document.getElementById('editCategory').value,
-                developer: document.getElementById('editDeveloper').value,
-                description: document.getElementById('editDescription').value,
-                apkurl: document.getElementById('editApkUrl').value
+            const id = document.getElementById('appId').value;
+            const data = {
+                title: document.getElementById('title').value,
+                category: document.getElementById('category').value,
+                developer: document.getElementById('developer').value,
+                description: document.getElementById('description').value,
+                apkurl: document.getElementById('apkurl').value,
             };
 
-            const response = await fetch(`${PB_URL}/api/collections/apps/records/${appId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updatedData)
-            });
-
-            if (response.ok) {
-                alert('App updated successfully in database!');
-                closeEditModal();
-                loadAdminApps();
-            } else {
-                alert('Failed to update app details.');
+            try {
+                if (id) {
+                    await pb.collection('apps').update(id, data);
+                } else {
+                    data.rating = 0;
+                    data.ratings_count = 0;
+                    await pb.collection('apps').create(data);
+                }
+                closeModal();
+                fetchAdminApps();
+            } catch (err) {
+                alert('Error saving app: ' + err.message);
             }
-        });
-
-        function escapeHtml(str) {
-            return String(str).replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
         }
 
-        loadAdminApps();
+        async function deleteApp(id) {
+            if (confirm('Are you sure you want to delete this app?')) {
+                try {
+                    await pb.collection('apps').delete(id);
+                    fetchAdminApps();
+                } catch (err) {
+                    alert('Error deleting app: ' + err.message);
+                }
+            }
+        }
+
+        // Initialize on load
+        fetchAdminApps();
     </script>
 </body>
 </html>
