@@ -80,33 +80,57 @@
     </main>
 
     <!-- Add/Edit Modal -->
-    <div id="appModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-        <div class="bg-cyber-card neon-border rounded-2xl w-full max-w-lg p-6 relative shadow-2xl">
+    <div id="appModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4 overflow-y-auto">
+        <div class="bg-cyber-card neon-border rounded-2xl w-full max-w-lg p-6 relative shadow-2xl my-8">
             <h2 id="modalTitle" class="text-xl font-bold mb-4 text-cyber-neon">Add New App</h2>
             <form id="appForm" onsubmit="saveApp(event)" class="space-y-4">
                 <input type="hidden" id="appId">
+                
                 <div>
                     <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">App Title</label>
                     <input type="text" id="title" required class="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:border-cyber-neon text-white">
                 </div>
+
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">Category</label>
-                        <input type="text" id="category" required class="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:border-cyber-neon text-white">
+                        <select id="category" required class="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:border-cyber-neon text-white">
+                            <option value="" disabled selected>Select category</option>
+                            <option value="Games">Games</option>
+                            <option value="Tools">Tools</option>
+                            <option value="Social">Social</option>
+                            <option value="Productivity">Productivity</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Other">Other</option>
+                        </select>
                     </div>
                     <div>
                         <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">Developer</label>
                         <input type="text" id="developer" required class="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:border-cyber-neon text-white">
                     </div>
                 </div>
+
                 <div>
                     <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">Description</label>
                     <textarea id="description" rows="3" required class="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:border-cyber-neon text-white"></textarea>
                 </div>
-                <div>
-                    <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">APK Direct URL</label>
-                    <input type="url" id="apkurl" required class="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:border-cyber-neon text-white">
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">App Icon Image URL</label>
+                        <input type="url" id="iconurl" placeholder="https://..." class="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:border-cyber-neon text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">Screenshot Image URL</label>
+                        <input type="url" id="screenshoturl" placeholder="https://..." class="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:border-cyber-neon text-white">
+                    </div>
                 </div>
+
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">APK Direct Download Link</label>
+                    <input type="url" id="apkurl" required placeholder="https://..." class="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:border-cyber-neon text-white">
+                </div>
+
                 <div class="flex justify-end space-x-3 pt-4 border-t border-gray-800">
                     <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm font-semibold transition">Cancel</button>
                     <button type="submit" class="px-5 py-2 bg-gradient-to-r from-cyber-neon to-cyber-purple text-black rounded-lg text-sm font-bold hover:opacity-90 transition">Save App</button>
@@ -117,7 +141,6 @@
 
     <!-- JavaScript Logic -->
     <script>
-        // REPLACE WITH YOUR LIVE RENDER URL
         const PB_URL = "https://sukiistore.onrender.com";
         const pb = new PocketBase(PB_URL);
 
@@ -134,7 +157,10 @@
 
                 tbody.innerHTML = records.map(app => `
                     <tr class="hover:bg-white/[0.02] transition border-b border-gray-800/50">
-                        <td class="p-4 font-semibold text-white">${app.title}</td>
+                        <td class="p-4 font-semibold text-white flex items-center space-x-3">
+                            ${app.iconurl ? `<img src="${app.iconurl}" class="w-8 h-8 rounded-lg object-cover neon-border">` : ''}
+                            <span>${app.title}</span>
+                        </td>
                         <td class="p-4 text-gray-400"><span class="px-2.5 py-1 bg-cyber-bg neon-border rounded-full text-xs text-cyber-neon">${app.category}</span></td>
                         <td class="p-4 text-gray-300">${app.developer}</td>
                         <td class="p-4 text-yellow-400 font-bold">★ ${app.rating ? app.rating.toFixed(1) : '0.0'} <span class="text-xs text-gray-500 font-normal">(${app.ratings_count || 0})</span></td>
@@ -165,6 +191,8 @@
             document.getElementById('category').value = app.category;
             document.getElementById('developer').value = app.developer;
             document.getElementById('description').value = app.description;
+            document.getElementById('iconurl').value = app.iconurl || '';
+            document.getElementById('screenshoturl').value = app.screenshoturl || '';
             document.getElementById('apkurl').value = app.apkurl;
             document.getElementById('appModal').classList.remove('hidden');
             document.getElementById('appModal').classList.add('flex');
@@ -183,6 +211,8 @@
                 category: document.getElementById('category').value,
                 developer: document.getElementById('developer').value,
                 description: document.getElementById('description').value,
+                iconurl: document.getElementById('iconurl').value,
+                screenshoturl: document.getElementById('screenshoturl').value,
                 apkurl: document.getElementById('apkurl').value,
             };
 
@@ -212,7 +242,6 @@
             }
         }
 
-        // Initialize on load
         fetchAdminApps();
     </script>
 </body>
