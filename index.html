@@ -177,6 +177,26 @@ let activeAppId = null;
 let activeAppRating = 0;
 let activeAppCount = 0;
 
+// Inside your admin script where you render the list of apps:
+app.items.forEach(item => {
+    const appCard = document.createElement('div');
+    appCard.className = 'flex items-center justify-between p-4 bg-white border rounded-xl shadow-sm mb-3';
+    
+    appCard.innerHTML = `
+        <div>
+            <h4 class="font-bold text-zinc-900">${escapeHtml(item.title)}</h4>
+            <p class="text-xs text-zinc-500">${escapeHtml(item.category)} • ${escapeHtml(item.developer)}</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <!-- EDIT BUTTON -->
+            <button onclick="openEditModal('${item.id}')" class="px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-semibold rounded-lg transition">
+                Edit
+            </button>
+        </div>
+    `;
+    adminAppListContainer.appendChild(appCard);
+});
+
 // Open app details modal and fetch its comments/ratings
 async function openAppModal(appId) {
     activeAppId = appId;
