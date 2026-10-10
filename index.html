@@ -1,262 +1,197 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth dark">
+<html lang="en" class="bg-gray-50 text-gray-900">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sukii Store — Android Apps</title>
+    <title>Sukii Store - APK Download Center</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        darkbg: '#090d16',
-                        cardbg: '#111827',
-                        cardborder: '#1f293d',
-                        neonteal: '#14b8a6',
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        /* Custom glowing background orb effects */
-        .glow-orb {
-            position: absolute;
-            width: 450px;
-            height: 450px;
-            background: radial-gradient(circle, rgba(20, 184, 166, 0.12) 0%, rgba(59, 130, 246, 0.05) 50%, transparent 80%);
-            z-index: 0;
-            pointer-events: none;
-            filter: blur(60px);
-        }
+        body { font-family: 'Space Grotesk', sans-serif; background-color: #f9fafb !important; color: #111827 !important; }
     </style>
 </head>
-<body class="font-sans antialiased bg-darkbg min-h-screen text-zinc-100 selection:bg-teal-500 selection:text-white relative overflow-x-hidden">
+<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
 
-    <!-- Glowing ambient background lighting -->
-    <div class="glow-orb top-[-100px] left-[-100px]"></div>
-    <div class="glow-orb top-[40%] right-[-150px]"></div>
-
-    <!-- Header Navigation -->
-    <header class="border-b border-cardborder bg-darkbg/80 backdrop-blur-xl sticky top-0 z-40 transition-all">
-        <div class="max-w-6xl mx-auto px-4 h-20 flex items-center justify-between relative z-10">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-teal-500 to-emerald-400 flex items-center justify-center shadow-lg shadow-teal-500/20 font-black text-darkbg text-xl">S</div>
-                <h1 class="text-xl font-extrabold tracking-tight text-white">Sukii<span class="text-teal-400">Store</span></h1>
+    <!-- Navbar -->
+    <nav class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-white">S</div>
+                <span class="text-xl font-bold tracking-wider text-gray-900">SUKII STORE</span>
             </div>
-            <a href="admin.html" class="text-xs font-semibold px-4 py-2.5 bg-cardborder/60 hover:bg-cardborder text-zinc-300 hover:text-white rounded-xl border border-zinc-700/50 transition duration-200">Admin Portal</a>
+            <div class="flex items-center space-x-4">
+                <a href="admin.html" class="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-blue-600 transition">Admin Portal</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero / Search Section -->
+    <header class="bg-white border-b border-gray-200 py-12 px-4 text-center">
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3">Discover & Download Android APKs</h1>
+        <p class="text-gray-600 max-w-xl mx-auto text-sm mb-6">Safe, fast, and lightweight direct downloads powered by Internet Archive & Supabase.</p>
+        <div class="max-w-md mx-auto relative">
+            <input type="text" id="searchInput" oninput="filterApps()" placeholder="Search apps by name or developer..." class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 pl-10 focus:outline-none focus:border-blue-600 text-gray-900 text-sm shadow-sm">
+            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
         </div>
     </header>
 
-    <!-- Hero Section -->
-    <section class="relative pt-24 pb-28 text-center animate-fade-in z-10">
-        <div class="max-w-3xl mx-auto px-4">
-            <span class="inline-flex items-center gap-2 px-4 py-1.5 text-xs font-semibold text-teal-400 bg-teal-500/10 border border-teal-500/20 rounded-full mb-6 shadow-inner">
-                <span class="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span> Next-Gen APK Archive Hub
-            </span>
-            <h2 class="text-4xl sm:text-7xl font-black tracking-tight text-white mb-6 leading-tight">
-                Discover & Download <span class="bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-400 bg-clip-text text-transparent">Android Apps</span>
-            </h2>
-            <p class="text-zinc-400 max-w-xl mx-auto text-base sm:text-lg mb-10 leading-relaxed">
-                Explore an archive-powered catalog featuring seamless downloads, live community ratings, and real-time reviews.
-            </p>
-            <a href="#catalog" class="inline-flex items-center gap-2 bg-gradient-to-r from-teal-500 to-emerald-500 px-8 py-4 text-sm font-bold text-darkbg rounded-2xl hover:opacity-95 hover:shadow-xl hover:shadow-teal-500/25 transition-all duration-300 transform hover:-translate-y-0.5">
-                Explore Catalog
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
-            </a>
+    <!-- Main Content / App Grid -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-bold text-gray-900">Available Apps</h2>
+            <div id="categoryFilters" class="flex flex-wrap gap-2 text-xs font-semibold">
+                <button onclick="filterCategory('All')" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg transition">All</button>
+                <button onclick="filterCategory('Games')" class="px-3 py-1.5 bg-gray-200 text-gray-700 hover:bg-gray-300 rounded-lg transition">Games</button>
+                <button onclick="filterCategory('Tools')" class="px-3 py-1.5 bg-gray-200 text-gray-700 hover:bg-gray-300 rounded-lg transition">Tools</button>
+                <button onclick="filterCategory('Social')" class="px-3 py-1.5 bg-gray-200 text-gray-700 hover:bg-gray-300 rounded-lg transition">Social</button>
+                <button onclick="filterCategory('Productivity')" class="px-3 py-1.5 bg-gray-200 text-gray-700 hover:bg-gray-300 rounded-lg transition">Productivity</button>
+            </div>
         </div>
-    </section>
 
-    <!-- Apps Catalog Grid -->
-    <main id="catalog" class="max-w-6xl mx-auto px-4 pb-32 relative z-10">
-        <div class="flex items-center justify-between mb-8">
-            <h3 class="text-2xl font-bold tracking-tight text-white">Available Apps</h3>
-            <span class="text-xs text-zinc-500 font-medium">Synced via PocketBase</span>
-        </div>
-        <div id="appsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            <!-- Dynamically injected app cards with animations -->
+        <div id="appGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="col-span-full text-center py-12 text-gray-500">Loading store apps...</div>
         </div>
     </main>
 
-    <!-- App Detail / Rating & Comments Modal -->
-    <div id="appDetailModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50 transition-opacity duration-300">
-        <div class="bg-cardbg border border-cardborder rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-2xl max-h-[90vh] overflow-y-auto animate-fade-in relative">
-            <div class="flex justify-between items-start mb-4">
-                <h2 id="modalAppTitle" class="text-2xl font-bold text-white">App Name</h2>
-                <button onclick="closeAppModal()" class="w-9 h-9 rounded-2xl bg-cardborder/50 border border-zinc-700/50 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-cardborder transition">&times;</button>
-            </div>
-            <p id="modalAppDesc" class="text-sm text-zinc-300 mb-6 leading-relaxed">Description goes here...</p>
-            
-            <!-- Ratings Section -->
-            <div class="bg-darkbg/60 p-5 rounded-2xl border border-cardborder mb-6">
-                <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">Rate this App</h4>
-                <div class="flex items-center gap-2">
-                    <button onclick="submitRating(1)" class="text-2xl text-amber-400 hover:scale-125 transition transform">★</button>
-                    <button onclick="submitRating(2)" class="text-2xl text-amber-400 hover:scale-125 transition transform">★</button>
-                    <button onclick="submitRating(3)" class="text-2xl text-amber-400 hover:scale-125 transition transform">★</button>
-                    <button onclick="submitRating(4)" class="text-2xl text-amber-400 hover:scale-125 transition transform">★</button>
-                    <button onclick="submitRating(5)" class="text-2xl text-amber-400 hover:scale-125 transition transform">★</button>
-                    <span id="avgRatingDisplay" class="text-xs font-semibold text-zinc-400 ml-3">(0.0 / 5)</span>
-                </div>
-            </div>
-
-            <!-- Comments Section -->
-            <div class="border-t border-cardborder pt-6">
-                <h3 class="text-base font-bold text-white mb-4">User Comments & Reviews</h3>
-                <div id="commentsList" class="space-y-3 mb-5 max-h-48 overflow-y-auto pr-1">
-                    <!-- Comments loaded dynamically -->
-                </div>
-
-                <form id="commentForm" class="space-y-3">
-                    <input type="text" id="commentAuthor" placeholder="Your Name" required class="w-full p-3.5 bg-darkbg border border-cardborder rounded-2xl text-sm text-zinc-200 focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition">
-                    <textarea id="commentText" rows="2" placeholder="Write your review..." required class="w-full p-3.5 bg-darkbg border border-cardborder rounded-2xl text-sm text-zinc-200 focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition"></textarea>
-                    <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-teal-500 to-emerald-500 text-darkbg rounded-2xl text-sm font-bold hover:opacity-95 hover:shadow-lg hover:shadow-teal-500/20 transition-all duration-200">Post Comment</button>
-                </form>
-            </div>
+    <!-- App Details Modal -->
+    <div id="detailModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4 overflow-y-auto">
+        <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-2xl p-6 relative shadow-2xl my-8">
+            <button onclick="closeDetailModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 font-bold text-lg">&times;</button>
+            <div id="modalContent"></div>
         </div>
     </div>
 
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 py-6 text-center text-xs text-gray-500">
+        &copy; 2026 Sukii Store. Powered by Supabase & Internet Archive.
+    </footer>
+
     <script>
-        const PB_URL_FRONT = "https://sukiistore.onrender.com"; // In index.html
-        let activeAppId = null;
-        let activeAppRating = 0;
-        let activeAppCount = 0;
+        const SUPABASE_URL = "YOUR_SUPABASE_URL";
+        const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        async function fetchApps() {
+        let allApps = [];
+        let currentCategory = 'All';
+
+        async function fetchStoreApps() {
             try {
-                const res = await fetch(`${PB_URL_FRONT}/api/collections/apps/records`);
-                const data = await res.json();
-                const grid = document.getElementById('appsGrid');
-                grid.innerHTML = '';
-
-                if (!data.items || data.items.length === 0) {
-                    grid.innerHTML = '<p class="text-zinc-500 text-sm col-span-3 text-center py-10">No apps available yet.</p>';
-                    return;
-                }
-
-                data.items.forEach((app, index) => {
-                    const card = document.createElement('div');
-                    card.className = 'bg-cardbg border border-cardborder rounded-3xl p-6 shadow-xl hover:shadow-teal-500/10 hover:border-teal-500/40 hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between opacity-0 animate-fade-in group relative overflow-hidden';
-                    card.style.animationDelay = `${index * 0.08}s`;
-
-                    card.innerHTML = `
-                        <div class="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 rounded-full blur-2xl group-hover:bg-teal-500/10 transition-all pointer-events-none"></div>
-                        <div>
-                            <span class="inline-block text-xs font-bold text-teal-400 bg-teal-500/10 px-3.5 py-1 rounded-full border border-teal-500/20">${escapeHtml(app.category || 'App')}</span>
-                            <h4 class="text-xl font-bold text-white mt-4 group-hover:text-teal-300 transition-colors">${escapeHtml(app.title)}</h4>
-                            <p class="text-xs text-zinc-500 mt-1">By ${escapeHtml(app.developer || 'Unknown')}</p>
-                            <p class="text-sm text-zinc-400 mt-3 line-clamp-2 leading-relaxed">${escapeHtml(app.description || '')}</p>
-                        </div>
-                        <div class="mt-6 pt-4 border-t border-cardborder flex items-center justify-between">
-                            <span class="text-xs font-bold text-amber-400 flex items-center gap-1.5">★ ${app.rating ? app.rating.toFixed(1) : '0.0'} <span class="text-zinc-500 font-normal">(${app.ratings_count || 0})</span></span>
-                            <div class="flex gap-2">
-                                <button onclick="openAppModal('${app.id}')" class="px-3.5 py-2 bg-cardborder/80 hover:bg-cardborder text-zinc-300 hover:text-white text-xs font-semibold rounded-xl border border-zinc-700/50 transition">Reviews</button>
-                                <a href="${escapeHtml(app.apkurl)}" target="_blank" class="px-4 py-2 bg-teal-500 hover:bg-teal-400 text-darkbg text-xs font-bold rounded-xl shadow-md hover:shadow-teal-500/25 transition">Download</a>
-                            </div>
-                        </div>
-                    `;
-                    grid.appendChild(card);
-                });
+                const { data, error } = await supabaseClient.from('apps').select('*').order('created_at', { ascending: false });
+                if (error) throw error;
+                allApps = data || [];
+                renderApps(allApps);
             } catch (err) {
-                console.error('Error fetching apps:', err);
-                document.getElementById('appsGrid').innerHTML = '<p class="text-zinc-500 text-sm col-span-3 text-center py-10">Unable to connect to backend database.</p>';
+                console.error('Error loading apps:', err);
+                document.getElementById('appGrid').innerHTML = `<div class="col-span-full text-center py-12 text-red-500">Failed to connect to Supabase backend database.</div>`;
             }
         }
 
-        async function openAppModal(appId) {
-            activeAppId = appId;
-            const res = await fetch(`${PB_URL_FRONT}/api/collections/apps/records/${appId}`);
-            const app = await res.json();
-
-            document.getElementById('modalAppTitle').innerText = app.title;
-            document.getElementById('modalAppDesc').innerText = app.description;
-            activeAppRating = app.rating || 0;
-            activeAppCount = app.ratings_count || 0;
-            document.getElementById('avgRatingDisplay').innerText = `(${activeAppRating.toFixed(1)} / 5 from ${activeAppCount} votes)`;
-
-            document.getElementById('appDetailModal').classList.remove('hidden');
-            loadComments(appId);
-        }
-
-        function closeAppModal() {
-            document.getElementById('appDetailModal').classList.add('hidden');
-        }
-
-        async function submitRating(stars) {
-            if (!activeAppId) return;
-            const newCount = activeAppCount + 1;
-            const newRating = parseFloat((((activeAppRating * activeAppCount) + stars) / newCount).toFixed(1));
-
-            const res = await fetch(`${PB_URL_FRONT}/api/collections/apps/records/${activeAppId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ rating: newRating, ratings_count: newCount })
-            });
-
-            if (res.ok) {
-                alert('Thank you for rating!');
-                openAppModal(activeAppId);
-            } else {
-                alert('Failed to submit rating.');
-            }
-        }
-
-        async function loadComments(appId) {
-            const res = await fetch(`${PB_URL_FRONT}/api/collections/comments/records?filter=(app_id='${appId}')`);
-            const data = await res.json();
-            const list = document.getElementById('commentsList');
-            list.innerHTML = '';
-
-            if (!data.items || data.items.length === 0) {
-                list.innerHTML = '<p class="text-xs text-zinc-500 py-2">No comments yet. Be the first!</p>';
+        function renderApps(apps) {
+            const grid = document.getElementById('appGrid');
+            if (apps.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-500">No apps found.</div>`;
                 return;
             }
 
-            data.items.forEach(c => {
-                const div = document.createElement('div');
-                div.className = 'p-3.5 bg-darkbg/80 border border-cardborder rounded-2xl text-xs';
-                div.innerHTML = `<span class="font-bold text-teal-400">${escapeHtml(c.author_name)}</span>
-                                 <p class="text-zinc-300 mt-1 leading-relaxed">${escapeHtml(c.content)}</p>`;
-                list.appendChild(div);
-            });
+            grid.innerHTML = apps.map(app => {
+                const iconSrc = app.icon_url || 'https://via.placeholder.com/64';
+                return `
+                    <div onclick="openAppDetail('${app.id}')" class="bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-md transition cursor-pointer flex flex-col justify-between">
+                        <div class="flex items-start space-x-4 mb-4">
+                            <img src="${iconSrc}" class="w-14 h-14 rounded-xl object-cover border border-gray-200 flex-shrink-0">
+                            <div>
+                                <h3 class="font-bold text-gray-900 text-base mb-1">${app.title}</h3>
+                                <p class="text-xs text-gray-500 mb-2">${app.developer}</p>
+                                <span class="px-2 py-0.5 bg-gray-100 border border-gray-200 rounded-full text-xs text-blue-600 font-medium">${app.category}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                            <span class="text-amber-500 text-xs font-bold">★ ${app.rating ? app.rating.toFixed(1) : '0.0'}</span>
+                            <span class="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition">Download</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
-        document.getElementById('commentForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!activeAppId) return;
-
-            const author_name = document.getElementById('commentAuthor').value;
-            const content = document.getElementById('commentText').value;
-
-            const res = await fetch(`${PB_URL_FRONT}/api/collections/comments/records`, {
-                mode: 'cors',
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ app_id: activeAppId, author_name, content })
+        function filterCategory(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('#categoryFilters button').forEach(btn => {
+                if (btn.innerText === cat) {
+                    btn.className = "px-3 py-1.5 bg-blue-600 text-white rounded-lg transition";
+                } else {
+                    btn.className = "px-3 py-1.5 bg-gray-200 text-gray-700 hover:bg-gray-300 rounded-lg transition";
+                }
             });
+            applyFilters();
+        }
 
-            if (res.ok) {
-                document.getElementById('commentText').value = '';
-                loadComments(activeAppId);
-            } else {
-                alert('Failed to post comment.');
+        function filterApps() {
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allApps.filter(app => {
+                const matchesCat = currentCategory === 'All' || app.category === currentCategory;
+                const matchesSearch = app.title.toLowerCase().includes(query) || app.developer.toLowerCase().includes(query);
+                return matchesCat && matchesSearch;
+            });
+            renderApps(filtered);
+        }
+
+        function openAppDetail(id) {
+            const app = allApps.find(a => a.id == id);
+            if (!app) return;
+
+            const iconSrc = app.icon_url || 'https://via.placeholder.com/80';
+            
+            let screenshotsHtml = '';
+            if (app.screenshot_urls) {
+                const shots = typeof app.screenshot_urls === 'string' ? app.screenshot_urls.split(',').map(s => s.trim()) : app.screenshot_urls;
+                screenshotsHtml = shots.map(s => `<img src="${s}" class="w-32 h-56 object-cover rounded-xl border border-gray-200 flex-shrink-0">`).join('');
             }
-        });
 
-        function escapeHtml(str) {
-            return String(str).replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+            const modalContent = document.getElementById('modalContent');
+            modalContent.innerHTML = `
+                <div class="flex items-start space-x-4 mb-6">
+                    <img src="${iconSrc}" class="w-20 h-20 rounded-2xl object-cover border border-gray-200 shadow-sm flex-shrink-0">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 mb-1">${app.title}</h2>
+                        <p class="text-sm text-gray-500 mb-2">Developer: ${app.developer}</p>
+                        <span class="px-3 py-1 bg-gray-100 border border-gray-200 rounded-full text-xs text-blue-600 font-semibold">${app.category}</span>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <h4 class="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2">About this app</h4>
+                    <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-line">${app.description}</p>
+                </div>
+                ${screenshotsHtml ? `
+                <div class="mb-6">
+                    <h4 class="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2">Screenshots</h4>
+                    <div class="flex space-x-3 overflow-x-auto pb-2">${screenshotsHtml}</div>
+                </div>` : ''}
+                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                    <button onclick="closeDetailModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-semibold transition">Close</button>
+                    <a href="${app.apk_url}" target="_blank" class="px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition shadow">Download APK</a>
+                </div>
+            `;
+
+            document.getElementById('detailModal').classList.remove('hidden');
+            document.getElementById('detailModal').classList.add('flex');
         }
 
-        fetchApps();
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+            document.getElementById('detailModal').classList.remove('flex');
+        }
+
+        fetchStoreApps();
     </script>
 </body>
 </html>
