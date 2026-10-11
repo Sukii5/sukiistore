@@ -20,9 +20,7 @@
         .glass-nav { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
         .app-card { background: #ffffff; border: 1px solid rgba(199, 210, 254, 0.5); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         .app-card:hover { transform: translateY(-6px); border-color: #6366f1; box-shadow: 0 20px 35px -10px rgba(99, 102, 241, 0.15); }
-        .floating-card { animation: float 6s ease-in-out infinite; cursor: pointer; transition: all 0.3s ease; }
-        .floating-card:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 25px 40px -10px rgba(99, 102, 241, 0.2); }
-        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-12px); } }
+        .slider-card { background: #ffffff; border: 1px solid rgba(199, 210, 254, 0.6); box-shadow: 0 25px 40px -10px rgba(99, 102, 241, 0.15); transition: all 0.5s ease-in-out; }
         .modal-enter { animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes modalPop { 0% { opacity: 0; transform: scale(0.95) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
     </style>
@@ -58,16 +56,17 @@
                     <i data-lucide="search" class="w-5 h-5 text-indigo-400 absolute left-4 top-4 transition-colors group-focus-within:text-indigo-600"></i>
                 </div>
             </div>
+            
+            <!-- Auto-Sliding Hero App Highlight Carousel -->
             <div class="lg:col-span-5 flex justify-center" data-aos="fade-left" data-aos-duration="700">
-                <div onclick="openHubModal()" class="floating-card relative w-full max-w-sm bg-gradient-to-br from-white/90 to-white/60 backdrop-blur-xl border border-indigo-200/80 rounded-3xl p-8 shadow-2xl shadow-indigo-500/15 text-center group">
-                    <div class="absolute -top-3 -right-3 bg-indigo-600 text-white text-[10px] font-extrabold uppercase px-3 py-1 rounded-full shadow-md tracking-wider animate-pulse">View Uploads</div>
-                    <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-3xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 group-hover:scale-105 transition-transform">
-                        <i data-lucide="smartphone" class="w-12 h-12"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-indigo-950 mb-2">Android APK Hub</h3>
-                    <p class="text-xs text-indigo-900/70 mb-6">Permanent Internet Archive storage with community feedback.</p>
-                    <div class="flex items-center justify-center gap-2 text-xs font-bold text-indigo-600 bg-indigo-50 py-2.5 px-4 rounded-xl border border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Click to Browse Hub Apps
+                <div id="heroSlider" class="slider-card relative w-full max-w-sm rounded-3xl p-6 sm:p-8 text-center">
+                    <div class="absolute -top-3 -right-3 bg-indigo-600 text-white text-[10px] font-extrabold uppercase px-3 py-1 rounded-full shadow-md tracking-wider">🔥 Featured Highlight</div>
+                    <div id="sliderContent">
+                        <div class="w-20 h-20 mx-auto mb-5 bg-indigo-100 rounded-2xl flex items-center justify-center text-indigo-400 animate-pulse">
+                            <i data-lucide="smartphone" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-indigo-950 mb-1">Loading Featured Apps...</h3>
+                        <p class="text-xs text-indigo-500 mb-6">Auto-sliding spotlight for uploaded APKs</p>
                     </div>
                 </div>
             </div>
@@ -98,28 +97,6 @@
         </div>
     </main>
 
-    <!-- Android APK Hub Highlight Modal -->
-    <div id="hubModal" class="fixed inset-0 bg-indigo-950/50 backdrop-blur-xs hidden items-center justify-center z-50 p-4 overflow-y-auto">
-        <div class="bg-white border border-indigo-100 rounded-3xl w-full max-w-2xl p-6 sm:p-8 relative shadow-2xl my-8 modal-enter max-h-[90vh] overflow-y-auto">
-            <button onclick="closeHubModal()" class="absolute top-5 right-5 w-9 h-9 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center font-bold transition">&times;</button>
-            <div class="flex items-center space-x-3.5 mb-6">
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md">
-                    <i data-lucide="smartphone" class="w-6 h-6"></i>
-                </div>
-                <div>
-                    <h3 class="text-xl font-extrabold text-indigo-950">Android APK Hub Directory</h3>
-                    <p class="text-xs text-indigo-500">Currently active and verified uploads stored on Internet Archive</p>
-                </div>
-            </div>
-            <div id="hubModalList" class="divide-y divide-indigo-100 max-h-96 overflow-y-auto pr-1 mb-6">
-                <div class="text-center py-8 text-indigo-400 text-xs">Loading directory...</div>
-            </div>
-            <div class="flex justify-end pt-4 border-t border-indigo-100">
-                <button onclick="closeHubModal()" class="px-5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-sm font-bold transition">Close</button>
-            </div>
-        </div>
-    </div>
-
     <!-- App Details & Reviews Modal -->
     <div id="detailModal" class="fixed inset-0 bg-indigo-950/50 backdrop-blur-xs hidden items-center justify-center z-50 p-4 overflow-y-auto transition-opacity duration-300">
         <div class="bg-white border border-indigo-100 rounded-3xl w-full max-w-2xl p-6 sm:p-8 relative shadow-2xl my-8 modal-enter max-h-[90vh] overflow-y-auto">
@@ -141,6 +118,8 @@
 
         let allApps = [];
         let currentCategory = 'All';
+        let sliderIndex = 0;
+        let sliderTimer = null;
 
         async function fetchStoreApps() {
             try {
@@ -148,10 +127,55 @@
                 if (error) throw error;
                 allApps = data || [];
                 renderApps(allApps);
+                initHeroSlider();
             } catch (err) {
                 console.error('Error loading apps:', err);
                 document.getElementById('appGrid').innerHTML = `<div class="col-span-full text-center py-16 text-rose-600 font-semibold bg-white border border-rose-200 rounded-2xl shadow-sm">Failed to connect to Supabase backend database. Check your configuration.</div>`;
             }
+        }
+
+        function initHeroSlider() {
+            if (allApps.length === 0) {
+                document.getElementById('sliderContent').innerHTML = `
+                    <div class="w-20 h-20 mx-auto mb-5 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-400">
+                        <i data-lucide="package-open" class="w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-indigo-950 mb-1">No Apps Uploaded</h3>
+                    <p class="text-xs text-indigo-500 mb-6">Use the admin portal to publish your first APK!</p>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            if (sliderTimer) clearInterval(sliderTimer);
+            renderSliderItem();
+            sliderTimer = setInterval(() => {
+                sliderIndex = (sliderIndex + 1) % allApps.length;
+                renderSliderItem();
+            }, 4000); // Slides every 4 seconds
+        }
+
+        function renderSliderItem() {
+            const app = allApps[sliderIndex];
+            if (!app) return;
+
+            const iconSrc = app.icon_url || 'https://via.placeholder.com/80';
+            const sliderEl = document.getElementById('sliderContent');
+            sliderEl.innerHTML = `
+                <div class="cursor-pointer group" onclick="openAppDetail('${app.id}')">
+                    <img src="${iconSrc}" class="w-20 h-20 mx-auto mb-4 rounded-2xl object-cover border border-indigo-100 shadow-md group-hover:scale-105 transition-transform">
+                    <span class="px-3 py-1 bg-indigo-50 border border-indigo-100 rounded-full text-[11px] text-indigo-600 font-bold inline-block mb-2">${app.category}</span>
+                    <h3 class="text-lg font-bold text-indigo-950 mb-1 truncate">${app.title}</h3>
+                    <p class="text-xs text-indigo-500 mb-5 truncate">By ${app.developer}</p>
+                </div>
+                <div class="flex items-center justify-center gap-3 pt-4 border-t border-indigo-100">
+                    <button onclick="openAppDetail('${app.id}')" class="flex-1 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition">View Details</button>
+                    <a href="${app.apk_url}" target="_blank" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-md shadow-indigo-600/20 flex items-center justify-center gap-1.5">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i> Download
+                    </a>
+                </div>
+            `;
+            lucide.createIcons();
         }
 
         function renderApps(apps) {
@@ -191,39 +215,6 @@
             }).join('');
             
             lucide.createIcons();
-        }
-
-        function openHubModal() {
-            const listContainer = document.getElementById('hubModalList');
-            if (allApps.length === 0) {
-                listContainer.innerHTML = `<div class="text-center py-8 text-indigo-400 text-xs">No apps uploaded to the hub yet.</div>`;
-            } else {
-                listContainer.innerHTML = allApps.map(app => `
-                    <div class="py-3.5 flex items-center justify-between gap-3 first:pt-0 last:pb-0">
-                        <div class="flex items-center space-x-3 min-w-0">
-                            <img src="${app.icon_url || 'https://via.placeholder.com/40'}" class="w-11 h-11 rounded-xl object-cover border border-indigo-100 shadow-2xs flex-shrink-0">
-                            <div class="min-w-0">
-                                <h4 class="font-bold text-indigo-950 text-sm truncate">${app.title}</h4>
-                                <p class="text-xs text-indigo-500 truncate">By ${app.developer} &bull; <span class="text-indigo-600 font-semibold">${app.category}</span></p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2 flex-shrink-0">
-                            <button onclick="closeHubModal(); openAppDetail('${app.id}')" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition">View</button>
-                            <a href="${app.apk_url}" target="_blank" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1">
-                                <i data-lucide="download" class="w-3 h-3"></i> APK
-                            </a>
-                        </div>
-                    </div>
-                `).join('');
-            }
-            document.getElementById('hubModal').classList.remove('hidden');
-            document.getElementById('hubModal').classList.add('flex');
-            lucide.createIcons();
-        }
-
-        function closeHubModal() {
-            document.getElementById('hubModal').classList.add('hidden');
-            document.getElementById('hubModal').classList.remove('flex');
         }
 
         function filterCategory(cat) {
