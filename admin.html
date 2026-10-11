@@ -4,13 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sukii Store - Admin Portal</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f3f4f6; color: #1e1b4b; }
@@ -20,7 +16,6 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <!-- Navbar -->
     <nav class="glass-nav border-b border-indigo-100 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             <div class="flex items-center space-x-3.5">
@@ -38,7 +33,6 @@
         </div>
     </nav>
 
-    <!-- Content -->
     <main class="max-w-4xl mx-auto px-4 py-10 flex-grow w-full space-y-10">
         
         <!-- Add New App Section -->
@@ -68,13 +62,9 @@
                         <input type="text" id="developer" required class="w-full bg-indigo-50/50 border border-indigo-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-600">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-indigo-900 uppercase mb-1">Star Rating (e.g. 4.8)</label>
-                        <input type="number" step="0.1" max="5" min="1" id="rating" value="5.0" class="w-full bg-indigo-50/50 border border-indigo-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-600">
+                        <label class="block text-xs font-bold text-indigo-900 uppercase mb-1">Internet Archive APK Direct URL</label>
+                        <input type="url" id="apk_url" required placeholder="https://archive.org/download/.../app.apk" class="w-full bg-indigo-50/50 border border-indigo-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-600">
                     </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-indigo-900 uppercase mb-1">Internet Archive APK Direct URL</label>
-                    <input type="url" id="apk_url" required placeholder="https://archive.org/download/.../app.apk" class="w-full bg-indigo-50/50 border border-indigo-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-600">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-indigo-900 uppercase mb-1">Icon Direct Image URL</label>
@@ -97,7 +87,7 @@
         <!-- Uploaded Applications List Section -->
         <div class="card rounded-3xl p-6 sm:p-8 shadow-xl">
             <h2 class="text-xl font-extrabold text-indigo-950 mb-6 flex items-center gap-2">
-                <i data-lucide="layers" class="w-5 h-5 text-indigo-600"></i> Manage Uploaded Apps
+                <i data-lucide="layers" class="w-5 h-5 text-indigo-600"></i> Manage Uploaded Apps & View Ratings
             </h2>
             <div id="adminAppsList" class="divide-y divide-indigo-100">
                 <div class="text-center py-10 text-indigo-400 text-sm">Loading uploaded applications...</div>
@@ -106,41 +96,56 @@
 
     </main>
 
-    <!-- JavaScript Admin Logic -->
     <script>
         const SUPABASE_URL = "https://bsfedqyqdhtfddmrebp.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_hdNe9WHMBDY-UwIHsaSqiA_n4pZ7VVC";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         async function fetchAdminApps() {
-            const { data, error } = await supabaseClient.from('apps').select('*').order('created_at', { ascending: false });
             const container = document.getElementById('adminAppsList');
+            try {
+                const { data: apps, error } = await supabaseClient.from('apps').select('*').order('created_at', { ascending: false });
+                if (error) throw error;
 
-            if (error) {
-                container.innerHTML = `<div class="text-center py-6 text-rose-600 text-sm font-semibold">Failed to load apps: ${error.message}</div>`;
-                return;
+                const { data: reviews } = await supabaseClient.from('reviews').select('*');
+
+                if (!apps || apps.length === 0) {
+                    container.innerHTML = `<div class="text-center py-10 text-indigo-400 text-sm">No applications uploaded yet. Use the form above to add your first app!</div>`;
+                    return;
+                }
+
+                container.innerHTML = apps.map(app => {
+                    const appReviews = reviews ? reviews.filter(r => r.app_id === app.id) : [];
+                    let avgRating = 5.0;
+                    if (appReviews.length > 0) {
+                        const sum = appReviews.reduce((acc, r) => acc + r.rating, 0);
+                        avgRating = (sum / appReviews.length).toFixed(1);
+                    }
+
+                    return `
+                        <div class="py-4 flex items-center justify-between gap-4 first:pt-0 last:pb-0">
+                            <div class="flex items-center space-x-4 min-w-0">
+                                <img src="${app.icon_url || 'https://via.placeholder.com/48'}" class="w-12 h-12 rounded-xl object-cover border border-indigo-100 shadow-xs flex-shrink-0">
+                                <div class="min-w-0">
+                                    <h4 class="font-bold text-indigo-950 text-sm truncate">${app.title}</h4>
+                                    <p class="text-xs text-indigo-500 truncate">By ${app.developer} &bull; <span class="font-semibold text-indigo-600">${app.category}</span></p>
+                                    <span class="inline-block mt-1 text-xs font-bold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">
+                                        ★ ${avgRating} (${appReviews.length} community reviews)
+                                    </span>
+                                </div>
+                            </div>
+                            <button onclick="deleteApp('${app.id}')" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-bold transition flex items-center gap-1.5 flex-shrink-0">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+
+                lucide.createIcons();
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = `<div class="text-center py-6 text-rose-600 text-sm font-semibold">Failed to load apps. Check your internet connection or Supabase settings.</div>`;
             }
-
-            if (!data || data.length === 0) {
-                container.innerHTML = `<div class="text-center py-10 text-indigo-400 text-sm">No applications uploaded yet. Use the form above to add your first app!</div>`;
-                return;
-            }
-
-            container.innerHTML = data.map(app => `
-                py-4 flex items-center justify-between gap-4 first:pt-0 last:pb-0
-                <div class="flex items-center space-x-4 min-w-0 py-4">
-                    <img src="${app.icon_url || 'https://via.placeholder.com/48'}" class="w-12 h-12 rounded-xl object-cover border border-indigo-100 shadow-xs flex-shrink-0">
-                    <div class="min-w-0">
-                        <h4 class="font-bold text-indigo-950 text-sm truncate">${app.title}</h4>
-                        <p class="text-xs text-indigo-500 truncate">By ${app.developer} &bull; <span class="font-semibold text-indigo-600">${app.category}</span></p>
-                    </div>
-                </div>
-                <button onclick="deleteApp('${app.id}')" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-bold transition flex items-center gap-1.5 flex-shrink-0">
-                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete
-                </button>
-            `).join('');
-
-            lucide.createIcons();
         }
 
         async function handleAppSubmit(event) {
@@ -149,7 +154,6 @@
                 title: document.getElementById('title').value,
                 category: document.getElementById('category').value,
                 developer: document.getElementById('developer').value,
-                rating: parseFloat(document.getElementById('rating').value),
                 apk_url: document.getElementById('apk_url').value,
                 icon_url: document.getElementById('icon_url').value,
                 screenshot_urls: document.getElementById('screenshot_urls').value,
@@ -167,7 +171,7 @@
         }
 
         async function deleteApp(id) {
-            if (!confirm('Are you sure you want to delete this application from the store?')) return;
+            if (!confirm('Are you sure you want to delete this application?')) return;
 
             const { error } = await supabaseClient.from('apps').delete().eq('id', id);
             if (error) {

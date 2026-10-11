@@ -119,16 +119,16 @@
         let currentCategory = 'All';
 
         async function fetchStoreApps() {
-            try {
-                const { data, error } = await supabaseClient.from('apps').select('*').order('created_at', { ascending: false });
-                if (error) throw error;
-                allApps = data || [];
-                renderApps(allApps);
-            } catch (err) {
-                console.error('Error loading apps:', err);
-                document.getElementById('appGrid').innerHTML = `<div class="col-span-full text-center py-16 text-rose-600 font-semibold bg-white border border-rose-200 rounded-2xl shadow-sm">Failed to connect to Supabase backend database.</div>`;
-            }
-        }
+    try {
+        const { data, error } = await supabaseClient.from('apps').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        allApps = data || [];
+        renderApps(allApps);
+    } catch (err) {
+        console.error('Error loading apps:', err);
+        document.getElementById('appGrid').innerHTML = `<div class="col-span-full text-center py-16 text-rose-600 font-semibold bg-white border border-rose-200 rounded-2xl shadow-sm">Failed to connect to Supabase backend database. Make sure your 'apps' table is created.</div>`;
+    }
+}
 
         function renderApps(apps) {
             const grid = document.getElementById('appGrid');
