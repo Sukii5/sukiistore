@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sukii Store - Android APK Hub</title>
+    
+    <!-- Browser Tab Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='10' fill='%236366f1'/><path d='M16 8v12m-5-5l5 5 5-5' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/><path d='M10 23h12' stroke='%23ffffff' stroke-width='3' stroke-linecap='round'/></svg>">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f3f4f6; color: #1e1b4b; }
+        .hero-bg {
+            background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 50%, #f5f3ff 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-glow {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, rgba(147, 51, 234, 0.05) 70%);
+            top: -50px;
+            right: -50px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .glass-nav { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+        .app-card { background: #ffffff; border: 1px solid rgba(199, 210, 254, 0.5); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .app-card:hover { transform: translateY(-6px); border-color: #6366f1; box-shadow: 0 20px 35px -10px rgba(99, 102, 241, 0.15); }
+        .floating-card {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+        }
+        .modal-enter { animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes modalPop {
+            0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-indigo-600 selection:text-white">
+
+    <!-- Navbar -->
+    <nav class="glass-nav border-b border-indigo-100 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3.5 cursor-pointer group" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition-transform">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                </div>
+                <div>
+                    <span class="text-xl font-extrabold tracking-tight text-indigo-950 block">SUKII STORE</span>
+                    <span class="text-[10px] tracking-widest text-indigo-600 font-bold uppercase block -mt-1">APK Hub</span>
+                </div>
+            </div>
+            <div class="flex items-center">
+                <span class="text-xs font-semibold text-indigo-900 bg-indigo-100/80 px-3.5 py-1.5 rounded-full border border-indigo-200">Secure Direct Access</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero-bg py-16 sm:py-24 px-4 border-b border-indigo-100 relative">
+        <div class="hero-glow"></div>
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
+            <div class="lg:col-span-7 text-left" data-aos="fade-right" data-aos-duration="700">
+                <span class="px-3.5 py-1.5 bg-indigo-100/80 border border-indigo-200 rounded-full text-xs font-bold text-indigo-700 tracking-wide uppercase inline-block mb-6 shadow-2xs">
+                    ✨ Permanent Software Archive
+                </span>
+                <h1 class="text-4xl sm:text-6xl font-extrabold text-indigo-950 mb-6 tracking-tight leading-[1.1]">
+                    Smarter <br>
+                    <span class="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-800 bg-clip-text text-transparent">Applications.</span>
+                </h1>
+                <p class="text-indigo-900/80 max-w-lg text-base sm:text-lg mb-8 leading-relaxed font-normal">
+                    Discover and download verified Android APKs instantly. Powered by permanent Internet Archive storage and Supabase cloud.
+                </p>
+                <div class="max-w-md relative group">
+                    <input type="text" id="searchInput" oninput="filterApps()" placeholder="Search apps by name or developer..." class="w-full bg-white/90 hover:bg-white focus:bg-white border border-indigo-200 focus:border-indigo-600 rounded-2xl px-5 py-4 pl-12 focus:outline-none focus:ring-4 focus:ring-indigo-600/15 text-indigo-950 text-sm shadow-xl transition-all placeholder:text-indigo-400">
+                    <i data-lucide="search" class="w-5 h-5 text-indigo-400 absolute left-4 top-4 transition-colors group-focus-within:text-indigo-600"></i>
+                </div>
+            </div>
+            <div class="lg:col-span-5 flex justify-center" data-aos="fade-left" data-aos-duration="700">
+                <div class="floating-card relative w-full max-w-sm bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-xl border border-white/80 rounded-3xl p-8 shadow-2xl shadow-indigo-500/10 text-center">
+                    <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-3xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                        <i data-lucide="smartphone" class="w-12 h-12"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-indigo-950 mb-2">Android APK Hub</h3>
+                    <p class="text-xs text-indigo-900/70 mb-6">Optimized for speed, safety, and permanence with zero data loss.</p>
+                    <div class="flex items-center justify-center gap-2 text-xs font-bold text-indigo-600 bg-indigo-50 py-2 px-4 rounded-xl border border-indigo-100">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Cloud Database Online
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content / App Grid -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow w-full">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8" data-aos="fade-up" data-aos-duration="500">
+            <h2 class="text-xl font-extrabold text-indigo-950 flex items-center gap-2.5 tracking-tight">
+                <div class="w-8 h-8 rounded-xl bg-indigo-100 border border-indigo-200 flex items-center justify-center text-indigo-600">
+                    <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                </div> 
+                Available Applications
+            </h2>
+            <div id="categoryFilters" class="flex flex-wrap gap-2 text-xs font-semibold">
+                <button onclick="filterCategory('All')" class="px-4 py-2.5 bg-indigo-600 text-white rounded-xl transition shadow-md shadow-indigo-600/20">All Apps</button>
+                <button onclick="filterCategory('Games')" class="px-4 py-2.5 bg-white border border-indigo-100 text-indigo-900 hover:bg-indigo-50 rounded-xl transition shadow-2xs">Games</button>
+                <button onclick="filterCategory('Tools')" class="px-4 py-2.5 bg-white border border-indigo-100 text-indigo-900 hover:bg-indigo-50 rounded-xl transition shadow-2xs">Tools</button>
+                <button onclick="filterCategory('Social')" class="px-4 py-2.5 bg-white border border-indigo-100 text-indigo-900 hover:bg-indigo-50 rounded-xl transition shadow-2xs">Social</button>
+                <button onclick="filterCategory('Productivity')" class="px-4 py-2.5 bg-white border border-indigo-100 text-indigo-900 hover:bg-indigo-50 rounded-xl transition shadow-2xs">Productivity</button>
+            </div>
+        </div>
+
+        <div id="appGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="col-span-full text-center py-20 text-indigo-400 flex flex-col items-center justify-center space-y-3">
+                <div class="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                <p class="text-sm font-semibold tracking-wide">Loading store apps...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- App Details Modal -->
+    <div id="detailModal" class="fixed inset-0 bg-indigo-950/50 backdrop-blur-xs hidden items-center justify-center z-50 p-4 overflow-y-auto transition-opacity duration-300">
+        <div class="bg-white border border-indigo-100 rounded-3xl w-full max-w-2xl p-6 sm:p-8 relative shadow-2xl my-8 modal-enter">
+            <button onclick="closeDetailModal()" class="absolute top-5 right-5 w-9 h-9 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center font-bold transition">&times;</button>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-indigo-100 py-8 text-center text-xs text-indigo-500 font-medium">
+        <p>&copy; 2026 Sukii Store. Built with Supabase & Internet Archive.</p>
+    </footer>
+
+    <!-- JavaScript Store Logic -->
+    <script>
+        AOS.init({ once: true, offset: 50 });
+
+        const SUPABASE_URL = "https://bsfedqyqdhtfddmrebp.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_hdNe9WHMBDY-UwIHsaSqiA_n4pZ7VVC";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let allApps = [];
+        let currentCategory = 'All';
+
+        async function fetchStoreApps() {
+            try {
+                const { data, error } = await supabaseClient.from('apps').select('*').order('created_at', { ascending: false });
+                if (error) throw error;
+                allApps = data || [];
+                renderApps(allApps);
+            } catch (err) {
+                console.error('Error loading apps:', err);
+                document.getElementById('appGrid').innerHTML = `<div class="col-span-full text-center py-16 text-rose-600 font-semibold bg-white border border-rose-200 rounded-2xl shadow-sm">Failed to connect to Supabase backend database.</div>`;
+            }
+        }
+
+        function renderApps(apps) {
+            const grid = document.getElementById('appGrid');
+            if (apps.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-20 text-indigo-400 bg-white border border-indigo-100 rounded-2xl shadow-sm" data-aos="fade-in">
+                        <i data-lucide="package-open" class="w-12 h-12 mx-auto mb-3 text-indigo-300"></i>
+                        <p class="text-base font-bold text-indigo-950">No applications found</p>
+                        <p class="text-xs text-indigo-400 mt-1">Try searching for a different keyword or category.</p>
+                    </div>`;
+                lucide.createIcons();
+                return;
+            }
+
+            grid.innerHTML = apps.map((app, index) => {
+                const iconSrc = app.icon_url || 'https://via.placeholder.com/64';
+                return `
+                    <div onclick="openAppDetail('${app.id}')" class="app-card rounded-2xl p-6 cursor-pointer flex flex-col justify-between shadow-xs" data-aos="fade-up" data-aos-delay="${index * 40}">
+                        <div class="flex items-start space-x-4 mb-5">
+                            <img src="${iconSrc}" class="w-16 h-16 rounded-2xl object-cover border border-indigo-50 shadow-xs flex-shrink-0">
+                            <div class="min-w-0 flex-1">
+                                <h3 class="font-bold text-indigo-950 text-base truncate mb-1">${app.title}</h3>
+                                <p class="text-xs text-indigo-500 truncate mb-3">${app.developer}</p>
+                                <span class="px-3 py-1 bg-indigo-50 border border-indigo-100 rounded-full text-[11px] text-indigo-600 font-bold inline-block">${app.category}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-indigo-50">
+                            <span class="text-amber-500 text-xs font-bold flex items-center gap-1.5 bg-amber-50 border border-amber-200/60 px-2.5 py-1 rounded-lg">
+                                <i data-lucide="star" class="w-3.5 h-3.5 fill-amber-500"></i> ${app.rating ? app.rating.toFixed(1) : '5.0'}
+                            </span>
+                            <span class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition shadow-md shadow-indigo-600/20 flex items-center gap-1.5">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i> Get APK
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            lucide.createIcons();
+        }
+
+        function filterCategory(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('#categoryFilters button').forEach(btn => {
+                if (btn.innerText.includes(cat)) {
+                    btn.className = "px-4 py-2.5 bg-indigo-600 text-white rounded-xl transition shadow-md shadow-indigo-600/20";
+                } else {
+                    btn.className = "px-4 py-2.5 bg-white border border-indigo-100 text-indigo-900 hover:bg-indigo-50 rounded-xl transition shadow-2xs";
+                }
+            });
+            applyFilters();
+        }
+
+        function filterApps() {
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allApps.filter(app => {
+                const matchesCat = currentCategory === 'All' || app.category === currentCategory;
+                const matchesSearch = app.title.toLowerCase().includes(query) || app.developer.toLowerCase().includes(query);
+                return matchesCat && matchesSearch;
+            });
+            renderApps(filtered);
+        }
+
+        function openAppDetail(id) {
+            const app = allApps.find(a => a.id == id);
+            if (!app) return;
+
+            const iconSrc = app.icon_url || 'https://via.placeholder.com/80';
+            let screenshotsHtml = '';
+            if (app.screenshot_urls) {
+                const shots = typeof app.screenshot_urls === 'string' ? app.screenshot_urls.split(',').map(s => s.trim()) : app.screenshot_urls;
+                screenshotsHtml = shots.map(s => `<img src="${s}" class="w-32 h-56 object-cover rounded-2xl border border-indigo-100 shadow-xs flex-shrink-0 hover:scale-[1.02] transition">`).join('');
+            }
+
+            const modalContent = document.getElementById('modalContent');
+            modalContent.innerHTML = `
+                <div class="flex items-start space-x-4 mb-6">
+                    <img src="${iconSrc}" class="w-20 h-20 rounded-2xl object-cover border border-indigo-100 shadow-sm flex-shrink-0">
+                    <div>
+                        <h2 class="text-2xl font-bold text-indigo-950 mb-1">${app.title}</h2>
+                        <p class="text-sm text-indigo-500 mb-2">Developer: ${app.developer}</p>
+                        <span class="px-3 py-1 bg-indigo-50 border border-indigo-100 rounded-full text-xs text-indigo-600 font-bold">${app.category}</span>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <h4 class="text-xs uppercase tracking-wider text-indigo-400 font-extrabold mb-2">About this app</h4>
+                    <p class="text-sm text-indigo-950 leading-relaxed whitespace-pre-line bg-indigo-50/50 p-5 rounded-2xl border border-indigo-100">${app.description}</p>
+                </div>
+                ${screenshotsHtml ? `
+                <div class="mb-6">
+                    <h4 class="text-xs uppercase tracking-wider text-indigo-400 font-extrabold mb-2">Screenshots</h4>
+                    <div class="flex space-x-3 overflow-x-auto pb-2 scrollbar-thin">${screenshotsHtml}</div>
+                </div>` : ''}
+                <div class="flex justify-end space-x-3 pt-5 border-t border-indigo-100">
+                    <button onclick="closeDetailModal()" class="px-5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-sm font-bold transition">Close</button>
+                    <a href="${app.apk_url}" target="_blank" class="px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-600/25 flex items-center gap-2">
+                        <i data-lucide="download" class="w-4 h-4"></i> Download APK
+                    </a>
+                </div>
+            `;
+
+            document.getElementById('detailModal').classList.remove('hidden');
+            document.getElementById('detailModal').classList.add('flex');
+            lucide.createIcons();
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+            document.getElementById('detailModal').classList.remove('flex');
+        }
+
+        fetchStoreApps();
+    </script>
+</body>
+</html>

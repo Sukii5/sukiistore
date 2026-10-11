@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sukii Store - Admin Portal</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f3f4f6; color: #1e1b4b; }
+        .glass-nav { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); }
+        .card { background: #ffffff; border: 1px solid rgba(199, 210, 254, 0.5); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="glass-nav border-b border-indigo-100 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3.5">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
+                    <i data-lucide="shield-check" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-extrabold tracking-tight text-indigo-950 block">SUKII ADMIN</span>
+                    <span class="text-[10px] tracking-widest text-indigo-600 font-bold uppercase block -mt-1">Management Portal</span>
+                </div>
+            </div>
+            <a href="index.html" class="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition">View Live Store</a>
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <main class="max-w-4xl mx-auto px-4 py-10 flex-grow w-full">
+        <div class="card rounded-3xl p-6 sm:p-8 shadow-xl mb-8">
+            <h2 class="text-xl font-extrabold text-indigo-950 mb-6 flex items-center gap-2">
+                <i data-lucide="plus-circle" class="w-5 h-5 text-indigo-600"></i> Add New App Metadata
+            </h2>
+            <form id="addAppForm" onsubmit="handleAppSubmit(event)" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-indigo-900 uppercase mb-1">App Title</label>
+                        <input type="text" id="title" required class="w-full bg-indigo-50/50 border border-indigo-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-indigo-900 uppercase mb-1">Category</label>
+                        <select id="category" class="w-full bg-indigo-50/50 border border-indigo-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-600">
+                            <option value="Games">Games</option>
+                            <option value="Tools">Tools</option>
+                            <option value="Social">Social</option>
+                            <option value="Productivity">Productivity</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-indigo-900 uppercase mb-1">Developer Name</label>
+                        <input type="text" id="developer" required class="w-full bg-indigo-50/50 border border-indigo-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-600">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-indigo-900 uppercase mb-1">Star Rating (e.g. 4.8)</label>
+                        <input type="number" step="0.1" max="5" min="1" id="rating" value="5.0" class="w-full bg-indigo-50/50 border border-indigo-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-600">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-indigo-900 uppercase mb-1">Internet Archive APK Direct URL</label>
+                    <input type="url" id="apk_url" required placeholder="https://archive.org/download/.../app.apk" class="w-full bg-indigo-50/50 border border-indigo-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-600">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-indigo-900 uppercase mb-1">Icon Direct Image URL</label>
+                    <input type="url" id="icon_url" required placeholder="https://archive.org/download/.../icon.png" class="w-full bg-indigo-50/50 border border-indigo-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-600">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-indigo-900 uppercase mb-1">Screenshot URLs (Comma-separated)</label>
+                    <input type="text" id="screenshot_urls" placeholder="https://.../shot1.png, https://.../shot2.png" class="w-full bg-indigo-50/50 border border-indigo-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-600">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-indigo-900 uppercase mb-1">Description</label>
+                    <textarea id="description" rows="4" required class="w-full bg-indigo-50/50 border border-indigo-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-600"></textarea>
+                </div>
+                <button type="submit" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm transition shadow-lg shadow-indigo-600/30">Publish App to Store</button>
+            </form>
+        </div>
+    </main>
+
+    <!-- JavaScript Admin Logic -->
+    <script>
+        const SUPABASE_URL = "https://bsfedqyqdhtfddmrebp.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_hdNe9WHMBDY-UwIHsaSqiA_n4pZ7VVC";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function handleAppSubmit(event) {
+            event.preventDefault();
+            const newApp = {
+                title: document.getElementById('title').value,
+                category: document.getElementById('category').value,
+                developer: document.getElementById('developer').value,
+                rating: parseFloat(document.getElementById('rating').value),
+                apk_url: document.getElementById('apk_url').value,
+                icon_url: document.getElementById('icon_url').value,
+                screenshot_urls: document.getElementById('screenshot_urls').value,
+                description: document.getElementById('description').value
+            };
+
+            const { error } = await supabaseClient.from('apps').insert([newApp]);
+            if (error) {
+                alert('Error publishing app: ' + error.message);
+            } else {
+                alert('App published successfully!');
+                document.getElementById('addAppForm').reset();
+            }
+        }
+        lucide.createIcons();
+    </script>
+</body>
+</html>
