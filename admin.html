@@ -12,6 +12,8 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f3f4f6; color: #1e1b4b; }
         .glass-nav { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); }
         .card { background: #ffffff; border: 1px solid rgba(199, 210, 254, 0.5); }
+        .modal-enter { animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes modalPop { 0% { opacity: 0; transform: scale(0.95) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -35,12 +37,13 @@
 
     <main class="max-w-4xl mx-auto px-4 py-10 flex-grow w-full space-y-10">
         
-        <!-- Add New App Section -->
+        <!-- Add / Edit App Form Section -->
         <div class="card rounded-3xl p-6 sm:p-8 shadow-xl">
-            <h2 class="text-xl font-extrabold text-indigo-950 mb-6 flex items-center gap-2">
+            <h2 id="formTitle" class="text-xl font-extrabold text-indigo-950 mb-6 flex items-center gap-2">
                 <i data-lucide="plus-circle" class="w-5 h-5 text-indigo-600"></i> Add New App Metadata
             </h2>
             <form id="addAppForm" onsubmit="handleAppSubmit(event)" class="space-y-4">
+                <input type="hidden" id="appId">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-indigo-900 uppercase mb-1">App Title</label>
@@ -78,16 +81,19 @@
                     <label class="block text-xs font-bold text-indigo-900 uppercase mb-1">Description</label>
                     <textarea id="description" rows="4" required class="w-full bg-indigo-50/50 border border-indigo-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-600"></textarea>
                 </div>
-                <button type="submit" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm transition shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2">
-                    <i data-lucide="upload" class="w-4 h-4"></i> Publish App to Store
-                </button>
+                <div class="flex items-center gap-3">
+                    <button type="submit" id="submitBtn" class="flex-grow py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm transition shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2">
+                        <i data-lucide="upload" class="w-4 h-4"></i> Publish App to Store
+                    </button>
+                    <button type="button" id="cancelEditBtn" onclick="resetForm()" class="hidden px-5 py-3.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl font-bold text-sm transition">Cancel</button>
+                </div>
             </form>
         </div>
 
         <!-- Uploaded Applications List Section -->
         <div class="card rounded-3xl p-6 sm:p-8 shadow-xl">
             <h2 class="text-xl font-extrabold text-indigo-950 mb-6 flex items-center gap-2">
-                <i data-lucide="layers" class="w-5 h-5 text-indigo-600"></i> Manage Uploaded Apps & View Ratings
+                <i data-lucide="layers" class="w-5 h-5 text-indigo-600"></i> Manage Uploaded Apps & View Reviews
             </h2>
             <div id="adminAppsList" class="divide-y divide-indigo-100">
                 <div class="text-center py-10 text-indigo-400 text-sm">Loading uploaded applications...</div>
@@ -96,42 +102,47 @@
 
     </main>
 
+    <!-- Admin Details & Review Comments Modal -->
+    <div id="adminDetailModal" class="fixed inset-0 bg-indigo-950/50 backdrop-blur-xs hidden items-center justify-center z-50 p-4 overflow-y-auto">
+        <div class="bg-white border border-indigo-100 rounded-3xl w-full max-w-2xl p-6 sm:p-8 relative shadow-2xl my-8 modal-enter max-h-[90vh] overflow-y-auto">
+            <button onclick="closeAdminModal()" class="absolute top-5 right-5 w-9 h-9 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center font-bold transition">&times;</button>
+            <div id="adminModalContent"></div>
+        </div>
+    </div>
+
     <script>
         const SUPABASE_URL = "https://bsfedqyqdhtfddrrpebp.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_hdNe9WHMBDY-UwIHsaSqiA_n4pZ7VVC";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        let cachedApps = [];
+        let cachedReviews = [];
+
         async function fetchAdminApps() {
             const container = document.getElementById('adminAppsList');
             try {
-                // Fetch apps
                 const { data: apps, error } = await supabaseClient.from('apps').select('*').order('created_at', { ascending: false });
                 if (error) throw error;
+                cachedApps = apps || [];
 
-                // Safely attempt to fetch reviews (won't crash if table isn't ready)
-                let reviews = [];
-                try {
-                    const revRes = await supabaseClient.from('reviews').select('*');
-                    reviews = revRes.data || [];
-                } catch (e) {
-                    console.warn('Reviews table not queried:', e);
-                }
+                const { data: reviews } = await supabaseClient.from('reviews').select('*');
+                cachedReviews = reviews || [];
 
-                if (!apps || apps.length === 0) {
+                if (cachedApps.length === 0) {
                     container.innerHTML = `<div class="text-center py-10 text-indigo-400 text-sm">No applications uploaded yet. Use the form above to add your first app!</div>`;
                     return;
                 }
 
-                container.innerHTML = apps.map(app => {
-                    const appReviews = reviews.filter(r => r.app_id === app.id);
-                    let avgRating = app.rating || 5.0;
+                container.innerHTML = cachedApps.map(app => {
+                    const appReviews = cachedReviews.filter(r => r.app_id === app.id);
+                    let avgRating = 5.0;
                     if (appReviews.length > 0) {
                         const sum = appReviews.reduce((acc, r) => acc + r.rating, 0);
                         avgRating = (sum / appReviews.length).toFixed(1);
                     }
 
                     return `
-                        <div class="py-4 flex items-center justify-between gap-4 first:pt-0 last:pb-0">
+                        <div class="py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 first:pt-0 last:pb-0">
                             <div class="flex items-center space-x-4 min-w-0">
                                 <img src="${app.icon_url || 'https://via.placeholder.com/48'}" class="w-12 h-12 rounded-xl object-cover border border-indigo-100 shadow-xs flex-shrink-0">
                                 <div class="min-w-0">
@@ -142,9 +153,17 @@
                                     </span>
                                 </div>
                             </div>
-                            <button onclick="deleteApp('${app.id}')" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-bold transition flex items-center gap-1.5 flex-shrink-0">
-                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete
-                            </button>
+                            <div class="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto justify-end">
+                                <button onclick="openAdminModal('${app.id}')" class="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                                    <i data-lucide="eye" class="w-3.5 h-3.5"></i> Details & Reviews
+                                </button>
+                                <button onclick="loadAppForEdit('${app.id}')" class="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                                    <i data-lucide="edit" class="w-3.5 h-3.5"></i> Edit
+                                </button>
+                                <button onclick="deleteApp('${app.id}')" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete
+                                </button>
+                            </div>
                         </div>
                     `;
                 }).join('');
@@ -158,7 +177,8 @@
 
         async function handleAppSubmit(event) {
             event.preventDefault();
-            const newApp = {
+            const appId = document.getElementById('appId').value;
+            const appData = {
                 title: document.getElementById('title').value,
                 category: document.getElementById('category').value,
                 developer: document.getElementById('developer').value,
@@ -168,14 +188,114 @@
                 description: document.getElementById('description').value
             };
 
-            const { error } = await supabaseClient.from('apps').insert([newApp]);
-            if (error) {
-                alert('Error publishing app: ' + error.message);
+            if (appId) {
+                // Update existing app
+                const { error } = await supabaseClient.from('apps').update(appData).eq('id', appId);
+                if (error) {
+                    alert('Error updating app: ' + error.message);
+                } else {
+                    alert('App updated successfully!');
+                    resetForm();
+                    fetchAdminApps();
+                }
             } else {
-                alert('App published successfully!');
-                document.getElementById('addAppForm').reset();
-                fetchAdminApps();
+                // Insert new app
+                const { error } = await supabaseClient.from('apps').insert([appData]);
+                if (error) {
+                    alert('Error publishing app: ' + error.message);
+                } else {
+                    alert('App published successfully!');
+                    resetForm();
+                    fetchAdminApps();
+                }
             }
+        }
+
+        function loadAppForEdit(id) {
+            const app = cachedApps.find(a => a.id === id);
+            if (!app) return;
+
+            document.getElementById('appId').value = app.id;
+            document.getElementById('title').value = app.title;
+            document.getElementById('category').value = app.category;
+            document.getElementById('developer').value = app.developer;
+            document.getElementById('apk_url').value = app.apk_url;
+            document.getElementById('icon_url').value = app.icon_url;
+            document.getElementById('screenshot_urls').value = app.screenshot_urls || '';
+            document.getElementById('description').value = app.description;
+
+            document.getElementById('formTitle').innerHTML = `<i data-lucide="edit" class="w-5 h-5 text-indigo-600"></i> Edit App: ${app.title}`;
+            document.getElementById('submitBtn').innerHTML = `<i data-lucide="save" class="w-4 h-4"></i> Save Changes`;
+            document.getElementById('cancelEditBtn').classList.remove('hidden');
+            lucide.createIcons();
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetForm() {
+            document.getElementById('addAppForm').reset();
+            document.getElementById('appId').value = '';
+            document.getElementById('formTitle').innerHTML = `<i data-lucide="plus-circle" class="w-5 h-5 text-indigo-600"></i> Add New App Metadata`;
+            document.getElementById('submitBtn').innerHTML = `<i data-lucide="upload" class="w-4 h-4"></i> Publish App to Store`;
+            document.getElementById('cancelEditBtn').classList.add('hidden');
+            lucide.createIcons();
+        }
+
+        function openAdminModal(id) {
+            const app = cachedApps.find(a => a.id === id);
+            if (!app) return;
+
+            const appReviews = cachedReviews.filter(r => r.app_id === app.id);
+            let avgRating = 5.0;
+            if (appReviews.length > 0) {
+                const sum = appReviews.reduce((acc, r) => acc + r.rating, 0);
+                avgRating = (sum / appReviews.length).toFixed(1);
+            }
+
+            let reviewsHtml = appReviews.length > 0 ? appReviews.map(r => `
+                <div class="bg-indigo-50/50 p-3.5 rounded-xl border border-indigo-100 mb-2.5">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="font-bold text-indigo-950 text-xs">${r.author_name}</span>
+                        <span class="text-amber-500 text-xs font-bold">★ ${r.rating}.0</span>
+                    </div>
+                    <p class="text-xs text-indigo-900">${r.comment}</p>
+                    <span class="text-[10px] text-indigo-400 mt-1 block">${new Date(r.created_at).toLocaleDateString()}</span>
+                </div>
+            `).join('') : `<p class="text-xs text-indigo-400 italic">No community reviews for this app yet.</p>`;
+
+            const modalContent = document.getElementById('adminModalContent');
+            modalContent.innerHTML = `
+                <div class="flex items-start space-x-4 mb-6">
+                    <img src="${app.icon_url || 'https://via.placeholder.com/64'}" class="w-16 h-16 rounded-2xl object-cover border border-indigo-100 shadow-sm flex-shrink-0">
+                    <div>
+                        <h3 class="text-xl font-bold text-indigo-950 mb-1">${app.title}</h3>
+                        <p class="text-xs text-indigo-500 mb-2">Developer: ${app.developer} &bull; Category: ${app.category}</p>
+                        <span class="text-amber-600 text-xs font-bold bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg">
+                            ★ ${avgRating} (${appReviews.length} reviews)
+                        </span>
+                    </div>
+                </div>
+                <div class="mb-5">
+                    <h4 class="text-xs uppercase tracking-wider text-indigo-400 font-extrabold mb-1.5">Description</h4>
+                    <p class="text-xs text-indigo-950 bg-indigo-50/40 p-4 rounded-xl border border-indigo-100 leading-relaxed">${app.description}</p>
+                </div>
+                <div class="mb-5">
+                    <h4 class="text-xs uppercase tracking-wider text-indigo-400 font-extrabold mb-2">Visitor Review Comments</h4>
+                    <div class="max-h-60 overflow-y-auto pr-1">${reviewsHtml}</div>
+                </div>
+                <div class="flex justify-end pt-4 border-t border-indigo-100">
+                    <button onclick="closeAdminModal()" class="px-5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition">Close</button>
+                </div>
+            `;
+
+            document.getElementById('adminDetailModal').classList.remove('hidden');
+            document.getElementById('adminDetailModal').classList.add('flex');
+            lucide.createIcons();
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminDetailModal').classList.add('hidden');
+            document.getElementById('adminDetailModal').classList.remove('flex');
         }
 
         async function deleteApp(id) {
@@ -192,5 +312,5 @@
         fetchAdminApps();
         lucide.createIcons();
     </script>
-    </body>
+</body>
 </html>
