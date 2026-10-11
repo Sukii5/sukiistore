@@ -20,7 +20,8 @@
         .glass-nav { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
         .app-card { background: #ffffff; border: 1px solid rgba(199, 210, 254, 0.5); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         .app-card:hover { transform: translateY(-6px); border-color: #6366f1; box-shadow: 0 20px 35px -10px rgba(99, 102, 241, 0.15); }
-        .floating-card { animation: float 6s ease-in-out infinite; }
+        .floating-card { animation: float 6s ease-in-out infinite; cursor: pointer; transition: all 0.3s ease; }
+        .floating-card:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 25px 40px -10px rgba(99, 102, 241, 0.2); }
         @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-12px); } }
         .modal-enter { animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes modalPop { 0% { opacity: 0; transform: scale(0.95) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
@@ -58,14 +59,15 @@
                 </div>
             </div>
             <div class="lg:col-span-5 flex justify-center" data-aos="fade-left" data-aos-duration="700">
-                <div class="floating-card relative w-full max-w-sm bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-xl border border-white/80 rounded-3xl p-8 shadow-2xl shadow-indigo-500/10 text-center">
-                    <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-3xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                <div onclick="openHubModal()" class="floating-card relative w-full max-w-sm bg-gradient-to-br from-white/90 to-white/60 backdrop-blur-xl border border-indigo-200/80 rounded-3xl p-8 shadow-2xl shadow-indigo-500/15 text-center group">
+                    <div class="absolute -top-3 -right-3 bg-indigo-600 text-white text-[10px] font-extrabold uppercase px-3 py-1 rounded-full shadow-md tracking-wider animate-pulse">View Uploads</div>
+                    <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-3xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 group-hover:scale-105 transition-transform">
                         <i data-lucide="smartphone" class="w-12 h-12"></i>
                     </div>
                     <h3 class="text-xl font-bold text-indigo-950 mb-2">Android APK Hub</h3>
                     <p class="text-xs text-indigo-900/70 mb-6">Permanent Internet Archive storage with community feedback.</p>
-                    <div class="flex items-center justify-center gap-2 text-xs font-bold text-indigo-600 bg-indigo-50 py-2 px-4 rounded-xl border border-indigo-100">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Cloud Database Online
+                    <div class="flex items-center justify-center gap-2 text-xs font-bold text-indigo-600 bg-indigo-50 py-2.5 px-4 rounded-xl border border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Click to Browse Hub Apps
                     </div>
                 </div>
             </div>
@@ -95,6 +97,28 @@
             </div>
         </div>
     </main>
+
+    <!-- Android APK Hub Highlight Modal -->
+    <div id="hubModal" class="fixed inset-0 bg-indigo-950/50 backdrop-blur-xs hidden items-center justify-center z-50 p-4 overflow-y-auto">
+        <div class="bg-white border border-indigo-100 rounded-3xl w-full max-w-2xl p-6 sm:p-8 relative shadow-2xl my-8 modal-enter max-h-[90vh] overflow-y-auto">
+            <button onclick="closeHubModal()" class="absolute top-5 right-5 w-9 h-9 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center font-bold transition">&times;</button>
+            <div class="flex items-center space-x-3.5 mb-6">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md">
+                    <i data-lucide="smartphone" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-extrabold text-indigo-950">Android APK Hub Directory</h3>
+                    <p class="text-xs text-indigo-500">Currently active and verified uploads stored on Internet Archive</p>
+                </div>
+            </div>
+            <div id="hubModalList" class="divide-y divide-indigo-100 max-h-96 overflow-y-auto pr-1 mb-6">
+                <div class="text-center py-8 text-indigo-400 text-xs">Loading directory...</div>
+            </div>
+            <div class="flex justify-end pt-4 border-t border-indigo-100">
+                <button onclick="closeHubModal()" class="px-5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-sm font-bold transition">Close</button>
+            </div>
+        </div>
+    </div>
 
     <!-- App Details & Reviews Modal -->
     <div id="detailModal" class="fixed inset-0 bg-indigo-950/50 backdrop-blur-xs hidden items-center justify-center z-50 p-4 overflow-y-auto transition-opacity duration-300">
@@ -167,6 +191,39 @@
             }).join('');
             
             lucide.createIcons();
+        }
+
+        function openHubModal() {
+            const listContainer = document.getElementById('hubModalList');
+            if (allApps.length === 0) {
+                listContainer.innerHTML = `<div class="text-center py-8 text-indigo-400 text-xs">No apps uploaded to the hub yet.</div>`;
+            } else {
+                listContainer.innerHTML = allApps.map(app => `
+                    <div class="py-3.5 flex items-center justify-between gap-3 first:pt-0 last:pb-0">
+                        <div class="flex items-center space-x-3 min-w-0">
+                            <img src="${app.icon_url || 'https://via.placeholder.com/40'}" class="w-11 h-11 rounded-xl object-cover border border-indigo-100 shadow-2xs flex-shrink-0">
+                            <div class="min-w-0">
+                                <h4 class="font-bold text-indigo-950 text-sm truncate">${app.title}</h4>
+                                <p class="text-xs text-indigo-500 truncate">By ${app.developer} &bull; <span class="text-indigo-600 font-semibold">${app.category}</span></p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                            <button onclick="closeHubModal(); openAppDetail('${app.id}')" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-bold transition">View</button>
+                            <a href="${app.apk_url}" target="_blank" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1">
+                                <i data-lucide="download" class="w-3 h-3"></i> APK
+                            </a>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('hubModal').classList.remove('hidden');
+            document.getElementById('hubModal').classList.add('flex');
+            lucide.createIcons();
+        }
+
+        function closeHubModal() {
+            document.getElementById('hubModal').classList.add('hidden');
+            document.getElementById('hubModal').classList.remove('flex');
         }
 
         function filterCategory(cat) {
