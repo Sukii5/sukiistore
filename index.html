@@ -254,6 +254,26 @@
         </div>
     </div>
 
+    <!-- App Details & Reviews Modal -->
+    <div id="detailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md hidden items-center justify-center z-50 p-4 overflow-y-auto transition-opacity duration-300">
+        <div id="modalContainer" class="bg-white border border-indigo-100 rounded-3xl w-full max-w-2xl p-6 sm:p-8 relative shadow-2xl my-8 modal-pop max-h-[90vh] overflow-y-auto">
+            <button onclick="closeDetailModal()" class="absolute top-5 right-5 w-9 h-9 bg-slate-100 hover:bg-rose-50 text-slate-500 hover:text-rose-600 rounded-full flex items-center justify-center font-bold transition-all hover:rotate-90">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <!-- Fullscreen Screenshot Lightbox Modal -->
+    <div id="screenshotModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-xl hidden items-center justify-center z-[100] p-4 transition-opacity duration-300" onclick="closeScreenshotModal()">
+        <button onclick="closeScreenshotModal()" class="absolute top-6 right-6 z-10 w-11 h-11 bg-white/10 hover:bg-rose-600/80 text-white rounded-full flex items-center justify-center transition-all hover:scale-110 border border-white/20">
+            <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+        <div class="relative max-w-full max-h-full flex items-center justify-center p-2" onclick="event.stopPropagation()">
+            <img id="fullscreenImage" src="" alt="Fullscreen App Screenshot" class="max-w-[92vw] max-h-[90vh] object-contain rounded-2xl shadow-2xl border border-white/10 modal-pop">
+        </div>
+    </div>
+
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
 
@@ -646,7 +666,10 @@
             if (app.screenshot_urls) {
                 const shots = typeof app.screenshot_urls === 'string' ? app.screenshot_urls.split(',').map(s => s.trim()) : app.screenshot_urls;
                 screenshotsHtml = shots.map(s => `
-                    <img src="${s}" class="w-32 h-56 object-cover rounded-2xl border border-indigo-100 shadow-xs flex-shrink-0 hover:scale-105 transition-transform duration-300" onerror="this.style.display='none'">
+                    <img src="${s}" 
+                         onclick="openScreenshotModal('${s}')" 
+                         class="w-32 h-56 object-cover rounded-2xl border border-indigo-100 shadow-xs flex-shrink-0 hover:scale-105 hover:border-indigo-500 cursor-zoom-in transition-all duration-300" 
+                         onerror="this.style.display='none'">
                 `).join('');
             }
 
@@ -793,6 +816,26 @@
 
         function closeDetailModal() {
             const modal = document.getElementById('detailModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        /* ---------------- Fullscreen Screenshot Lightbox ---------------- */
+        function openScreenshotModal(imgSrc) {
+            const modal = document.getElementById('screenshotModal');
+            const img = document.getElementById('fullscreenImage');
+            if (modal && img) {
+                img.src = imgSrc;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                lucide.createIcons();
+            }
+        }
+
+        function closeScreenshotModal() {
+            const modal = document.getElementById('screenshotModal');
             if (modal) {
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
