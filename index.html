@@ -297,6 +297,8 @@
     <script>
         AOS.init({ once: true, offset: 40 });
 
+        //track downloads
+
         async function trackAndDownload(appId, downloadUrl) {
   // Insert download log entry into Supabase
   await supabaseClient
@@ -305,6 +307,30 @@
 
   // Redirect to download link
   window.open(downloadUrl, '_blank');
+}
+
+async function handleDownload(appId, downloadUrl) {
+  try {
+    // 1. Insert download row into Supabase downloads table
+    const { data, error } = await supabaseClient
+      .from('downloads')
+      .insert([{ app_id: appId }]);
+
+    if (error) {
+      console.error('Failed to log download:', error.message);
+    } else {
+      console.log('Download recorded successfully in Supabase!');
+    }
+  } catch (err) {
+    console.error('Error logging download:', err);
+  } finally {
+    // 2. Open the APK download link in a new tab
+    if (downloadUrl && downloadUrl !== '#') {
+      window.open(downloadUrl, '_blank');
+    } else {
+      alert('Download link not available.');
+    }
+  }
 }
 
         // Escape HTML helper to prevent XSS
@@ -768,7 +794,11 @@
                 <!-- Footer Action Buttons -->
                 <div class="flex justify-end space-x-3 pt-5 border-t border-indigo-100">
                     <button onclick="closeDetailModal()" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all">Close</button>
-                    <a href="${app.apk_url}" target="_blank" onclick="triggerDownloadConfetti(event)" class="px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-indigo-600/25 flex items-center gap-2">
+                    <button 
+  onclick="handleDownload('${app.id}', '${app.apk_url}')" 
+  class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg transition">
+  <i class="lucide-download inline-block mr-2"></i> Get APK
+</button>
                         <i data-lucide="download" class="w-4 h-4"></i> Download APK
                     </a>
                 </div>
