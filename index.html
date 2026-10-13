@@ -297,6 +297,16 @@
     <script>
         AOS.init({ once: true, offset: 40 });
 
+        async function trackAndDownload(appId, downloadUrl) {
+  // Insert download log entry into Supabase
+  await supabaseClient
+    .from('downloads')
+    .insert([{ app_id: appId }]);
+
+  // Redirect to download link
+  window.open(downloadUrl, '_blank');
+}
+
         // Escape HTML helper to prevent XSS
         function escapeHtml(str) {
             if (!str) return '';
